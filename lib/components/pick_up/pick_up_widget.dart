@@ -1,0 +1,695 @@
+import '/backend/api_requests/api_calls.dart';
+import '/backend/schema/structs/index.dart';
+import '/flutter_flow/flutter_flow_icon_button.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_widgets.dart';
+import '/custom_code/actions/index.dart' as actions;
+import '/flutter_flow/custom_functions.dart' as functions;
+import 'package:easy_debounce/easy_debounce.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'pick_up_model.dart';
+export 'pick_up_model.dart';
+
+class PickUpWidget extends StatefulWidget {
+  const PickUpWidget({
+    super.key,
+    required this.sessionToken,
+  });
+
+  final String? sessionToken;
+
+  @override
+  State<PickUpWidget> createState() => _PickUpWidgetState();
+}
+
+class _PickUpWidgetState extends State<PickUpWidget> {
+  late PickUpModel _model;
+
+  LatLng? currentUserLocationValue;
+
+  @override
+  void setState(VoidCallback callback) {
+    super.setState(callback);
+    _model.onUpdate();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _model = createModel(context, () => PickUpModel());
+
+    getCurrentUserLocation(defaultLocation: LatLng(0.0, 0.0), cached: true)
+        .then((loc) => safeSetState(() => currentUserLocationValue = loc));
+    _model.textController ??= TextEditingController();
+    _model.textFieldFocusNode ??= FocusNode();
+  }
+
+  @override
+  void dispose() {
+    _model.maybeDispose();
+
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (currentUserLocationValue == null) {
+      return Container(
+        color: FlutterFlowTheme.of(context).primaryBackground,
+        child: Center(
+          child: SizedBox(
+            width: 40.0,
+            height: 40.0,
+            child: SpinKitRipple(
+              color: FlutterFlowTheme.of(context).primary,
+              size: 40.0,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: EdgeInsetsDirectional.fromSTEB(15.0, 0.0, 15.0, 20.0),
+      child: SafeArea(
+        child: Container(
+          decoration: BoxDecoration(
+            color: FlutterFlowTheme.of(context).secondaryBackground,
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          child: Padding(
+            padding: EdgeInsets.all(10.0),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding:
+                        EdgeInsetsDirectional.fromSTEB(10.0, 0.0, 0.0, 10.0),
+                    child: Text(
+                      'Select Pickup',
+                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                            font: GoogleFonts.montserrat(
+                              fontWeight: FontWeight.w600,
+                              fontStyle: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .fontStyle,
+                            ),
+                            fontSize: 25.0,
+                            letterSpacing: 0.0,
+                            fontWeight: FontWeight.w600,
+                            fontStyle: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .fontStyle,
+                          ),
+                    ),
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Expanded(
+                        child: Container(
+                          width: double.infinity,
+                          child: TextFormField(
+                            controller: _model.textController,
+                            focusNode: _model.textFieldFocusNode,
+                            onChanged: (_) => EasyDebounce.debounce(
+                              '_model.textController',
+                              Duration(milliseconds: 200),
+                              () async {
+                                currentUserLocationValue =
+                                    await getCurrentUserLocation(
+                                        defaultLocation: LatLng(0.0, 0.0));
+                                _model.autoCompleteResults =
+                                    await PlacesAutocompleteCall.call(
+                                  searched: _model.textController.text,
+                                  userLocation:
+                                      currentUserLocationValue?.toString(),
+                                  sessionToken: widget.sessionToken,
+                                );
+
+                                if ((_model.autoCompleteResults?.succeeded ??
+                                    true)) {
+                                  _model.searchResults =
+                                      PlacesAutocompleteCall.predictions(
+                                    (_model.autoCompleteResults?.jsonBody ??
+                                        ''),
+                                  )!
+                                          .toList()
+                                          .cast<dynamic>();
+                                  safeSetState(() {});
+                                }
+
+                                safeSetState(() {});
+                              },
+                            ),
+                            autofocus: true,
+                            textInputAction: TextInputAction.search,
+                            obscureText: false,
+                            decoration: InputDecoration(
+                              isDense: true,
+                              labelText: 'PickUp',
+                              labelStyle: FlutterFlowTheme.of(context)
+                                  .labelMedium
+                                  .override(
+                                    font: GoogleFonts.montserrat(
+                                      fontWeight: FlutterFlowTheme.of(context)
+                                          .labelMedium
+                                          .fontWeight,
+                                      fontStyle: FlutterFlowTheme.of(context)
+                                          .labelMedium
+                                          .fontStyle,
+                                    ),
+                                    letterSpacing: 0.0,
+                                    fontWeight: FlutterFlowTheme.of(context)
+                                        .labelMedium
+                                        .fontWeight,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .labelMedium
+                                        .fontStyle,
+                                  ),
+                              hintText: 'Enter pickup...',
+                              hintStyle: FlutterFlowTheme.of(context)
+                                  .labelMedium
+                                  .override(
+                                    font: GoogleFonts.montserrat(
+                                      fontWeight: FlutterFlowTheme.of(context)
+                                          .labelMedium
+                                          .fontWeight,
+                                      fontStyle: FlutterFlowTheme.of(context)
+                                          .labelMedium
+                                          .fontStyle,
+                                    ),
+                                    color: FlutterFlowTheme.of(context).accent1,
+                                    letterSpacing: 0.0,
+                                    fontWeight: FlutterFlowTheme.of(context)
+                                        .labelMedium
+                                        .fontWeight,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .labelMedium
+                                        .fontStyle,
+                                  ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: FlutterFlowTheme.of(context).alternate,
+                                  width: 2.0,
+                                ),
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color:
+                                      FlutterFlowTheme.of(context).primaryText,
+                                  width: 2.0,
+                                ),
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: FlutterFlowTheme.of(context).error,
+                                  width: 2.0,
+                                ),
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                              focusedErrorBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: FlutterFlowTheme.of(context).error,
+                                  width: 2.0,
+                                ),
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                              contentPadding: EdgeInsets.all(15.0),
+                            ),
+                            style: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .override(
+                                  font: GoogleFonts.raleway(
+                                    fontWeight: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontWeight,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontStyle,
+                                  ),
+                                  letterSpacing: 0.0,
+                                  fontWeight: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontWeight,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontStyle,
+                                ),
+                            maxLines: null,
+                            cursorColor:
+                                FlutterFlowTheme.of(context).primaryText,
+                            validator: _model.textControllerValidator
+                                .asValidator(context),
+                          ),
+                        ),
+                      ),
+                      FlutterFlowIconButton(
+                        borderColor: valueOrDefault<Color>(
+                          _model.currentLocChosen
+                              ? FlutterFlowTheme.of(context).primaryText
+                              : FlutterFlowTheme.of(context).alternate,
+                          FlutterFlowTheme.of(context).alternate,
+                        ),
+                        borderRadius: 12.0,
+                        borderWidth: 2.0,
+                        buttonSize: 40.0,
+                        fillColor:
+                            FlutterFlowTheme.of(context).secondaryBackground,
+                        icon: Icon(
+                          Icons.my_location_rounded,
+                          color: FlutterFlowTheme.of(context).accent1,
+                          size: 24.0,
+                        ),
+                        onPressed: () async {
+                          _model.chosen = null;
+                          _model.point = null;
+                          _model.title = null;
+                          _model.currentLocChosen = true;
+                          safeSetState(() {});
+                        },
+                      ),
+                    ].divide(SizedBox(width: 10.0)),
+                  ),
+                  Builder(
+                    builder: (context) {
+                      final autoComplete = _model.searchResults.toList();
+
+                      return ListView.separated(
+                        padding: EdgeInsets.fromLTRB(
+                          0,
+                          10.0,
+                          0,
+                          10.0,
+                        ),
+                        primary: false,
+                        shrinkWrap: true,
+                        scrollDirection: Axis.vertical,
+                        itemCount: autoComplete.length,
+                        separatorBuilder: (_, __) => SizedBox(height: 15.0),
+                        itemBuilder: (context, autoCompleteIndex) {
+                          final autoCompleteItem =
+                              autoComplete[autoCompleteIndex];
+                          return FutureBuilder<ApiCallResponse>(
+                            future: PlaceDetailsCall.call(
+                              placeId: getJsonField(
+                                autoCompleteItem,
+                                r'''$.place_id''',
+                              ).toString(),
+                              sessionToken: widget.sessionToken,
+                            ),
+                            builder: (context, snapshot) {
+                              // Customize what your widget looks like when it's loading.
+                              if (!snapshot.hasData) {
+                                return Center(
+                                  child: SizedBox(
+                                    width: 40.0,
+                                    height: 40.0,
+                                    child: SpinKitRipple(
+                                      color:
+                                          FlutterFlowTheme.of(context).primary,
+                                      size: 40.0,
+                                    ),
+                                  ),
+                                );
+                              }
+                              final containerPlaceDetailsResponse =
+                                  snapshot.data!;
+
+                              return Container(
+                                decoration: BoxDecoration(),
+                                child: Builder(
+                                  builder: (context) {
+                                    if (PlaceDetailsCall.status(
+                                          containerPlaceDetailsResponse
+                                              .jsonBody,
+                                        ) ==
+                                        'OK') {
+                                      return InkWell(
+                                        splashColor: Colors.transparent,
+                                        focusColor: Colors.transparent,
+                                        hoverColor: Colors.transparent,
+                                        highlightColor: Colors.transparent,
+                                        onTap: () async {
+                                          _model.chosen = autoCompleteItem;
+                                          _model.point =
+                                              functions.latLongForUpload(
+                                                  PlaceDetailsCall.location(
+                                            containerPlaceDetailsResponse
+                                                .jsonBody,
+                                          ));
+                                          _model.title = PlaceDetailsCall.name(
+                                            containerPlaceDetailsResponse
+                                                .jsonBody,
+                                          );
+                                          _model.currentLocChosen = false;
+                                          safeSetState(() {});
+                                        },
+                                        child: Container(
+                                          width: double.infinity,
+                                          constraints: BoxConstraints(
+                                            minHeight: 40.0,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(12.0),
+                                            border: Border.all(
+                                              color: valueOrDefault<Color>(
+                                                _model.chosen ==
+                                                        autoCompleteItem
+                                                    ? FlutterFlowTheme.of(
+                                                            context)
+                                                        .secondaryText
+                                                    : FlutterFlowTheme.of(
+                                                            context)
+                                                        .alternate,
+                                                FlutterFlowTheme.of(context)
+                                                    .alternate,
+                                              ),
+                                            ),
+                                          ),
+                                          child: Padding(
+                                            padding: EdgeInsets.all(10.0),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.max,
+                                              children: [
+                                                FutureBuilder<ApiCallResponse>(
+                                                  future:
+                                                      DistanceMatrixCall.call(
+                                                    originLocation: functions
+                                                        .locationForDistanceApi(
+                                                            currentUserLocationValue!),
+                                                    destinationLocation: functions
+                                                        .placeDetailToDistanceMatrix(
+                                                            PlaceDetailsCall
+                                                                .locationLat(
+                                                              containerPlaceDetailsResponse
+                                                                  .jsonBody,
+                                                            )!,
+                                                            PlaceDetailsCall
+                                                                .locationLong(
+                                                              containerPlaceDetailsResponse
+                                                                  .jsonBody,
+                                                            )!),
+                                                  ),
+                                                  builder: (context, snapshot) {
+                                                    // Customize what your widget looks like when it's loading.
+                                                    if (!snapshot.hasData) {
+                                                      return Center(
+                                                        child: SizedBox(
+                                                          width: 20.0,
+                                                          height: 20.0,
+                                                          child: SpinKitRipple(
+                                                            color: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .primary,
+                                                            size: 20.0,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    }
+                                                    final containerDistanceMatrixResponse =
+                                                        snapshot.data!;
+
+                                                    return Container(
+                                                      decoration:
+                                                          BoxDecoration(),
+                                                      child: Column(
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
+                                                        children: [
+                                                          Text(
+                                                            valueOrDefault<
+                                                                String>(
+                                                              DistanceMatrixCall
+                                                                  .distance(
+                                                                containerDistanceMatrixResponse
+                                                                    .jsonBody,
+                                                              ),
+                                                              '0 mi',
+                                                            ),
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .bodyMedium
+                                                                .override(
+                                                                  font: GoogleFonts
+                                                                      .montserrat(
+                                                                    fontWeight: FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .bodyMedium
+                                                                        .fontWeight,
+                                                                    fontStyle: FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .bodyMedium
+                                                                        .fontStyle,
+                                                                  ),
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .secondaryText,
+                                                                  fontSize:
+                                                                      10.0,
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                  fontWeight: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodyMedium
+                                                                      .fontWeight,
+                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodyMedium
+                                                                      .fontStyle,
+                                                                ),
+                                                          ),
+                                                          Text(
+                                                            valueOrDefault<
+                                                                String>(
+                                                              DistanceMatrixCall
+                                                                  .duration(
+                                                                containerDistanceMatrixResponse
+                                                                    .jsonBody,
+                                                              ),
+                                                              '0 min',
+                                                            ),
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .bodyMedium
+                                                                .override(
+                                                                  font: GoogleFonts
+                                                                      .montserrat(
+                                                                    fontWeight: FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .bodyMedium
+                                                                        .fontWeight,
+                                                                    fontStyle: FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .bodyMedium
+                                                                        .fontStyle,
+                                                                  ),
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .secondaryText,
+                                                                  fontSize:
+                                                                      10.0,
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                  fontWeight: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodyMedium
+                                                                      .fontWeight,
+                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodyMedium
+                                                                      .fontStyle,
+                                                                ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                                Expanded(
+                                                  child: Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        valueOrDefault<String>(
+                                                          getJsonField(
+                                                            autoCompleteItem,
+                                                            r'''$.structured_formatting.main_text''',
+                                                          )?.toString(),
+                                                          'Loading...',
+                                                        ),
+                                                        style:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .bodyMedium
+                                                                .override(
+                                                                  font: GoogleFonts
+                                                                      .montserrat(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                    fontStyle: FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .bodyMedium
+                                                                        .fontStyle,
+                                                                  ),
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w600,
+                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodyMedium
+                                                                      .fontStyle,
+                                                                ),
+                                                      ),
+                                                      Text(
+                                                        valueOrDefault<String>(
+                                                          getJsonField(
+                                                            autoCompleteItem,
+                                                            r'''$.structured_formatting.secondary_text''',
+                                                          )?.toString(),
+                                                          'loading...',
+                                                        ),
+                                                        style:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .bodyMedium
+                                                                .override(
+                                                                  font: GoogleFonts
+                                                                      .raleway(
+                                                                    fontWeight: FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .bodyMedium
+                                                                        .fontWeight,
+                                                                    fontStyle: FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .bodyMedium
+                                                                        .fontStyle,
+                                                                  ),
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .secondaryText,
+                                                                  fontSize:
+                                                                      12.0,
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                  fontWeight: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodyMedium
+                                                                      .fontWeight,
+                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodyMedium
+                                                                      .fontStyle,
+                                                                ),
+                                                      ),
+                                                    ].divide(
+                                                        SizedBox(height: 4.0)),
+                                                  ),
+                                                ),
+                                              ].divide(SizedBox(width: 10.0)),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    } else {
+                                      return Container(
+                                        width: double.infinity,
+                                        height: 0.0,
+                                        decoration: BoxDecoration(
+                                          color: FlutterFlowTheme.of(context)
+                                              .secondaryBackground,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
+                  FFButtonWidget(
+                    onPressed: () async {
+                      currentUserLocationValue = await getCurrentUserLocation(
+                          defaultLocation: LatLng(0.0, 0.0));
+                      if (_model.point != null) {
+                        Navigator.pop(
+                            context,
+                            LocationChosenStruct(
+                              latLngs: _model.point,
+                              title: _model.title,
+                            ));
+                      } else {
+                        _model.reverseGeoCoded = await actions.reverseGeocoding(
+                          currentUserLocationValue!,
+                          FFAppConstants.mapApiKey,
+                        );
+                        Navigator.pop(
+                            context,
+                            LocationChosenStruct(
+                              latLngs: currentUserLocationValue,
+                              title: _model.reverseGeoCoded,
+                            ));
+                      }
+
+                      safeSetState(() {});
+                    },
+                    text: valueOrDefault<String>(
+                      _model.point != null ? 'Confirm' : 'My Current Location',
+                      'My Current Location',
+                    ),
+                    options: FFButtonOptions(
+                      width: double.infinity,
+                      height: 40.0,
+                      padding:
+                          EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                      iconPadding:
+                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                      color: FlutterFlowTheme.of(context).primary,
+                      textStyle:
+                          FlutterFlowTheme.of(context).titleSmall.override(
+                                font: GoogleFonts.montserrat(
+                                  fontWeight: FontWeight.w500,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .titleSmall
+                                      .fontStyle,
+                                ),
+                                color: FlutterFlowTheme.of(context)
+                                    .secondaryBackground,
+                                letterSpacing: 0.0,
+                                fontWeight: FontWeight.w500,
+                                fontStyle: FlutterFlowTheme.of(context)
+                                    .titleSmall
+                                    .fontStyle,
+                              ),
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                  ),
+                ]
+                    .divide(SizedBox(height: 15.0))
+                    .addToStart(SizedBox(height: 10.0)),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

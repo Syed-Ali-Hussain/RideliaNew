@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "828020061798",
+    "firebase_url": "https://ridelia-4876c-default-rtdb.firebaseio.com",
+    "project_id": "ridelia-4876c",
+    "storage_bucket": "ridelia-4876c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:828020061798:android:ff023e65f5ac055cc15fa7",
+        "android_client_info": {
+          "package_name": "com.mycompany.ridelia"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC07FedS2U8YTlouXRNqCxsDOG4Q7zjShE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
